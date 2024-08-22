@@ -1,0 +1,33 @@
+plugins {
+    id "idea"
+    id "eclipse"
+    id "java"
+    id "antlr"
+    id "application"
+}
+
+compileJava {
+    sourceCompatibility = 21
+    targetCompatibility = 21
+}
+
+application {
+    mainClass = 'arithlang.Interpreter'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    antlr "org.antlr:antlr4:4.13.2"
+}
+
+run {
+    standardInput = System.in
+}
+
+
+generateGrammarSource {
+    arguments += ["-no-listener", "-package", "arithlang.parser; import static arithlang.AST.*"]
+}
