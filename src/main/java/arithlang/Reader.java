@@ -42,7 +42,7 @@ public class Reader {
 
     @SuppressWarnings("SameReturnValue")
     protected String getProgramDirectory() {
-        return "arithlang/src/main/java/arithlang/examples/";
+        return "src/main/java/arithlang/examples/";
     }
 
     protected String runFile(String programText) throws IOException {
