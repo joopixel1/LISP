@@ -60,9 +60,6 @@ grammar ArithLang;
 
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
- 
- Define : 'define' ;
- Let : 'let' ;
  Dot : '.' ;
 
  Number : DIGIT+ ;
