@@ -15,9 +15,9 @@ grammar ArithLang;
         ;
   
  numexp returns [NumExp ast]:
- 		      n0=Number { $ast = new NumExp(Integer.parseInt($n0.text)); }
+ 		      n0=Number { $ast = new NumExp( Integer.parseInt($n0.text)); }
   		| '-' n0=Number { $ast = new NumExp(-Integer.parseInt($n0.text)); }
-  		|     n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble($n0.text+"."+$n1.text)); }
+  		|     n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble(      $n0.text+"."+$n1.text)); }
   		| '-' n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble("-" + $n0.text+"."+$n1.text)); }
   		;		
   
