@@ -12,11 +12,21 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Reader {
+public class Reader implements AutoCloseable {
+
+    private final BufferedReader br;
+
+    public Reader() {
+        br = new BufferedReader(new InputStreamReader(System.in));
+    }
 
     public Program read() throws IOException {
         String programText = readNextProgram();
-        return parse(programText);
+        if (programText == null) {
+            return null;
+        } else {
+            return parse(programText);
+        }
     }
 
     public Program parse(String programText) {
@@ -34,10 +44,13 @@ public class Reader {
     }
 
     protected String readNextProgram() throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.print("$ ");
         String programText = br.readLine();
-        return runFile(programText);
+        if (programText == null) {
+            return null;
+        } else {
+            return runFile(programText);
+        }
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -56,7 +69,6 @@ public class Reader {
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
-
             while (line != null) {
                 sb.append(line);
                 sb.append(System.lineSeparator());
@@ -66,4 +78,8 @@ public class Reader {
         }
     }
 
+    @Override
+    public void close() throws Exception {
+        br.close();
+    }
 }
