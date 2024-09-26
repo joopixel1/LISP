@@ -20,6 +20,11 @@ public class Reader implements AutoCloseable {
         br = new BufferedReader(new InputStreamReader(System.in));
     }
 
+    @Override
+    public void close() throws Exception {
+        br.close();
+    }
+
     public Program read() throws IOException {
         String programText = readNextProgram();
         if (programText == null) {
@@ -29,21 +34,13 @@ public class Reader implements AutoCloseable {
         }
     }
 
-    public Program parse(String programText) {
-        Lexer l = getLexer(CharStreams.fromString(programText));
-        ArithLangParser p = getParser(new org.antlr.v4.runtime.CommonTokenStream(l));
+    private Program parse(String programText) {
+        Lexer l = new ArithLangLexer(CharStreams.fromString(programText));
+        ArithLangParser p = new ArithLangParser(new org.antlr.v4.runtime.CommonTokenStream(l));
         return p.program().ast;
     }
 
-    protected Lexer getLexer(CharStream s) {
-        return new ArithLangLexer(s);
-    }
-
-    protected ArithLangParser getParser(org.antlr.v4.runtime.CommonTokenStream s) {
-        return new ArithLangParser(s);
-    }
-
-    protected String readNextProgram() throws IOException {
+    private String readNextProgram() throws IOException {
         System.out.print("$ ");
         String programText = br.readLine();
         if (programText == null) {
@@ -53,16 +50,16 @@ public class Reader implements AutoCloseable {
         }
     }
 
-    @SuppressWarnings("SameReturnValue")
-    protected String getProgramDirectory() {
-        return "src/main/java/arithlang/examples/";
-    }
 
-    protected String runFile(String programText) throws IOException {
+    private String runFile(String programText) throws IOException {
         if (programText.startsWith("run ")) {
             programText = readFile(getProgramDirectory() + programText.substring(4));
         }
         return programText;
+    }
+
+    private String getProgramDirectory() {
+        return "src/main/java/arithlang/examples/";
     }
 
     private String readFile(String fileName) throws IOException {
@@ -76,10 +73,5 @@ public class Reader implements AutoCloseable {
             }
             return sb.toString();
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        br.close();
     }
 }

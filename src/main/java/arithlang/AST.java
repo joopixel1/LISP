@@ -11,9 +11,12 @@ import java.util.List;
  */
 @SuppressWarnings("rawtypes")
 public interface AST {
+
+    // This interface should contain a signature for each concrete AST node.
     interface Visitor<T> {
-        // This interface should contain a signature for each concrete AST node.
-        T visit(NumExp e);
+        T visit(AST.Program p);
+
+        T visit(AST.NumExp e);
 
         T visit(AST.AddExp e);
 
@@ -23,7 +26,9 @@ public interface AST {
 
         T visit(AST.DivExp e);
 
-        T visit(AST.Program p);
+        T visit(AST.IntDivExp e);
+
+        T visit(AST.PowExp e);
     }
 
     abstract class ASTNode {
@@ -31,7 +36,7 @@ public interface AST {
     }
 
     class Program extends ASTNode {
-        final Exp _e;
+        private final Exp _e;
 
         public Program(Exp e) {
             _e = e;
@@ -50,8 +55,21 @@ public interface AST {
 
     }
 
+    abstract class CompoundArithExp extends Exp {
+        final List<Exp> _rep;
+
+        public CompoundArithExp(List<Exp> args) {
+            _rep = new ArrayList<>();
+            _rep.addAll(args);
+        }
+
+        public List<Exp> all() {
+            return _rep;
+        }
+    }
+
     class NumExp extends Exp {
-        final double _val;
+        private final double _val;
 
         public NumExp(double v) {
             _val = v;
@@ -63,19 +81,6 @@ public interface AST {
 
         public Object accept(Visitor visitor) {
             return visitor.visit(this);
-        }
-    }
-
-    abstract class CompoundArithExp extends Exp {
-        final List<Exp> _rep;
-
-        public CompoundArithExp(List<Exp> args) {
-            _rep = new ArrayList<>();
-            _rep.addAll(args);
-        }
-
-        public List<Exp> all() {
-            return _rep;
         }
     }
 
@@ -109,6 +114,16 @@ public interface AST {
         }
     }
 
+    class IntDivExp extends CompoundArithExp {
+        public IntDivExp(List<Exp> args) {
+            super(args);
+        }
+
+        public Object accept(Visitor visitor) {
+            return visitor.visit(this);
+        }
+    }
+
     class MultExp extends CompoundArithExp {
         public MultExp(List<Exp> args) {
             super(args);
@@ -118,4 +133,15 @@ public interface AST {
             return visitor.visit(this);
         }
     }
+
+    class PowExp extends CompoundArithExp {
+        public PowExp(List<Exp> args) {
+            super(args);
+        }
+
+        public Object accept(Visitor visitor) {
+            return visitor.visit(this);
+        }
+    }
+
 }

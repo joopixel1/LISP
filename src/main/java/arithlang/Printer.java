@@ -8,7 +8,6 @@ public class Printer {
     }
 
     public static class Formatter implements AST.Visitor<String> {
-
         public String visit(Program p) {
             return (String) p.e().accept(this);
         }
@@ -40,6 +39,21 @@ public class Printer {
 
         public String visit(DivExp e) {
             StringBuilder result = new StringBuilder("(/");
+            for (AST.Exp exp : e.all())
+                result.append(" ").append(exp.accept(this));
+            return result + ")";
+        }
+
+        public String visit(IntDivExp e) {
+            StringBuilder result = new StringBuilder("(//");
+            for (AST.Exp exp : e.all())
+                result.append(" ").append(exp.accept(this));
+            return result + ")";
+        }
+
+        @Override
+        public String visit(PowExp e) {
+            StringBuilder result = new StringBuilder("(^");
             for (AST.Exp exp : e.all())
                 result.append(" ").append(exp.accept(this));
             return result + ")";

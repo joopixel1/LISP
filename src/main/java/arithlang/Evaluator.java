@@ -13,6 +13,16 @@ public class Evaluator implements Visitor<Value> {
     }
 
     @Override
+    public Value visit(Program p) {
+        return (Value) p.e().accept(this);
+    }
+
+    @Override
+    public Value visit(NumExp e) {
+        return new NumVal(e.v());
+    }
+
+    @Override
     public Value visit(AddExp e) {
         // semantics for add expression -- the result is the result of
         // summing each of the operands
@@ -26,21 +36,16 @@ public class Evaluator implements Visitor<Value> {
     }
 
     @Override
-    public Value visit(NumExp e) {
-        return new NumVal(e.v());
-    }
-
-    @Override
-    public Value visit(DivExp e) {
-        // semantics for div expression -- the result is the result of
-        // dividing each of the operands, in sequence, from left to
+    public Value visit(SubExp e) {
+        // semantics for sub expression -- the result is the result of
+        // subtracting each of the operands, in sequence, from left to
         // right
         List<Exp> operands = e.all();
-        NumVal lVal = (NumVal) operands.getFirst().accept(this);
+        NumVal lVal = (NumVal) operands.get(0).accept(this);
         double result = lVal.v();
         for (int i = 1; i < operands.size(); i++) {
             NumVal rVal = (NumVal) operands.get(i).accept(this);
-            result = result / rVal.v();
+            result = result - rVal.v();
         }
         return new NumVal(result);
     }
@@ -59,21 +64,44 @@ public class Evaluator implements Visitor<Value> {
     }
 
     @Override
-    public Value visit(Program p) {
-        return (Value) p.e().accept(this);
-    }
-
-    @Override
-    public Value visit(SubExp e) {
-        // semantics for sub expression -- the result is the result of
-        // subtracting each of the operands, in sequence, from left to
+    public Value visit(DivExp e) {
+        // semantics for div expression -- the result is the result of
+        // dividing each of the operands, in sequence, from left to
         // right
         List<Exp> operands = e.all();
-        NumVal lVal = (NumVal) operands.getFirst().accept(this);
+        NumVal lVal = (NumVal) operands.get(0).accept(this);
         double result = lVal.v();
         for (int i = 1; i < operands.size(); i++) {
             NumVal rVal = (NumVal) operands.get(i).accept(this);
-            result = result - rVal.v();
+            result = result / rVal.v();
+        }
+        return new NumVal(result);
+    }
+
+    @Override
+    public Value visit(IntDivExp e) {
+        // semantics for div expression -- the result is the result of
+        // dividing each of the operands, in sequence, from left to
+        // right
+        List<Exp> operands = e.all();
+        NumVal lVal = (NumVal) operands.get(0).accept(this);
+        double result = lVal.v();
+        for (int i = 1; i < operands.size(); i++) {
+            NumVal rVal = (NumVal) operands.get(i).accept(this);
+            result = ((int) (result / rVal.v()));
+        }
+        return new NumVal(result);
+    }
+
+    @Override
+    public Value visit(PowExp e) {
+        // semantics for mult expression -- the result is the result of
+        // multiplying each of the operands
+        double result = 1;
+        List<Exp> operands = e.all();
+        for (int i=operands.size()-1; i>=0; i--) {
+            NumVal val = (NumVal) operands.get(i).accept(this);
+            result = Math.pow(val.v(), result);
         }
         return new NumVal(result);
     }

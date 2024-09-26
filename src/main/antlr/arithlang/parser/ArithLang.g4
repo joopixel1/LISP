@@ -7,11 +7,13 @@ grammar ArithLang;
 		;
 
  exp returns [Exp ast]: 
-		  n=numexp  { $ast = $n.ast; }
-        | a=addexp  { $ast = $a.ast; }
-        | s=subexp  { $ast = $s.ast; }
-        | m=multexp { $ast = $m.ast; }
-        | d=divexp  { $ast = $d.ast; }
+		  n=numexp      { $ast = $n.ast; }
+        | a=addexp      { $ast = $a.ast; }
+        | s=subexp      { $ast = $s.ast; }
+        | m=multexp     { $ast = $m.ast; }
+        | p=powexp      { $ast = $p.ast; }
+        | d=divexp      { $ast = $d.ast; }
+        | i=intdivexp   { $ast = $i.ast; }
         ;
   
  numexp returns [NumExp ast]:
@@ -47,7 +49,7 @@ grammar ArithLang;
  		    ( e=exp { $list.add($e.ast); } )+ 
  		')' { $ast = new MultExp($list); }
  		;
- 
+
  divexp returns [DivExp ast] 
         locals [ArrayList<Exp> list]
  		@init { $list = new ArrayList<Exp>(); } :
@@ -56,6 +58,24 @@ grammar ArithLang;
  		    ( e=exp { $list.add($e.ast); } )+ 
  		')' { $ast = new DivExp($list); }
  		;
+
+  intdivexp returns [IntDivExp ast]
+         locals [ArrayList<Exp> list]
+  		@init { $list = new ArrayList<Exp>(); } :
+  		'(' '//'
+  		      e=exp { $list.add($e.ast); }
+  		    ( e=exp { $list.add($e.ast); } )+
+  		')' { $ast = new IntDivExp($list); }
+  		;
+
+  powexp returns [PowExp ast]
+         locals [ArrayList<Exp> list]
+  		@init { $list = new ArrayList<Exp>(); } :
+  		'(' '^'
+  		      e=exp { $list.add($e.ast); }
+  		    ( e=exp { $list.add($e.ast); } )+
+  		')' { $ast = new PowExp($list); }
+  		;
 
 
  // Lexical Specification of this Programming Language
@@ -84,4 +104,4 @@ grammar ArithLang;
  ELLIPSIS : '...';
  WS  :  [ \t\r\n\u000C]+ -> skip;
  Comment :   '/*' .*? '*/' -> skip;
- Line_Comment :   '//' ~[\r\n]* -> skip;
+ Line_Comment :   '#' ~[\r\n]* -> skip;
