@@ -1,6 +1,7 @@
 package arithlang;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -14,25 +15,29 @@ public interface AST {
 
     // This interface should contain a signature for each concrete AST node.
     interface Visitor<T> {
-        T visit(AST.Program p);
+        T visit(AST.Program p, Env env);
 
-        T visit(AST.NumExp e);
+        T visit(AST.NumExp e, Env env);
 
-        T visit(AST.AddExp e);
+        T visit(AST.AddExp e, Env env);
 
-        T visit(AST.SubExp e);
+        T visit(AST.SubExp e, Env env);
 
-        T visit(AST.MultExp e);
+        T visit(AST.MultExp e, Env env);
 
-        T visit(AST.DivExp e);
+        T visit(AST.DivExp e, Env env);
 
-        T visit(AST.IntDivExp e);
+        T visit(AST.IntDivExp e, Env env);
 
-        T visit(AST.PowExp e);
+        T visit(AST.PowExp e, Env env);
+
+        T visit(AST.VarExp e, Env env);
+
+        T visit(AST.LetExp e, Env env);
     }
 
     abstract class ASTNode {
-        public abstract Object accept(Visitor visitor);
+        public abstract Object accept(Visitor visitor, Env env);
     }
 
     class Program extends ASTNode {
@@ -46,8 +51,8 @@ public interface AST {
             return _e;
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
@@ -69,18 +74,18 @@ public interface AST {
     }
 
     class NumExp extends Exp {
-        private final double _val;
+        private final Value.NumVal _val;
 
         public NumExp(double v) {
-            _val = v;
+            _val = new Value.NumVal(v);
         }
 
-        public double v() {
+        public Value.NumVal v() {
             return _val;
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
@@ -89,8 +94,8 @@ public interface AST {
             super(args);
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
@@ -99,8 +104,8 @@ public interface AST {
             super(args);
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
@@ -109,8 +114,8 @@ public interface AST {
             super(args);
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
@@ -119,8 +124,8 @@ public interface AST {
             super(args);
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
@@ -129,8 +134,8 @@ public interface AST {
             super(args);
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
@@ -139,9 +144,37 @@ public interface AST {
             super(args);
         }
 
-        public Object accept(Visitor visitor) {
-            return visitor.visit(this);
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
         }
     }
 
+    class VarExp extends Exp {
+        private final String _name;
+        public VarExp(String name) {
+            this._name = name;
+        }
+
+        public String name() { return _name; }
+
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
+        }
+    }
+
+    class LetExp extends Exp {
+        private final HashMap<String, Exp> _decl;
+        private final Exp _body;
+        public LetExp(HashMap<String, Exp> map, Exp body) {
+            this._decl = map;
+            this._body = body;
+        }
+
+        public HashMap<String, Exp> getDeclaration(){ return _decl; }
+        public Exp getBody(){ return _body; }
+
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
+        }
+    }
 }

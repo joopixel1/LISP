@@ -15,7 +15,9 @@ public interface Value {
         }
 
         public String toString() {
-            return Double.toString(_val);
+            int tmp = (int) _val;
+            if (_val == ((double) tmp)) return "" + tmp;
+            else return ""+_val;
         }
     }
 

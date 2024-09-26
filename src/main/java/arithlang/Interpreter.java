@@ -29,10 +29,11 @@ public class Interpreter {
                         System.out.println();
                         continue;
                     }
+                    printer.print(p);
                     Value val = eval.valueOf(p);
                     printer.print(val);
                 } catch (Exception e) {
-                    System.err.println("Error:" + e.getMessage());
+                    printer.print(e);
                 }
             }
         } catch (Exception e) {

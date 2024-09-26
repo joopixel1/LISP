@@ -1,5 +1,10 @@
 grammar ArithLang;
 
+@header {
+    import java.util.HashMap;
+    import java.util.ArrayList;
+ }
+
  // Grammar of this Programming Language
  //  - grammar rules start with lowercase
  program returns [Program ast] : 
@@ -14,14 +19,20 @@ grammar ArithLang;
         | p=powexp      { $ast = $p.ast; }
         | d=divexp      { $ast = $d.ast; }
         | i=intdivexp   { $ast = $i.ast; }
+        | v=varexp      { $ast = $v.ast; }
+        | l=letexp      { $ast = $l.ast; }
         ;
   
  numexp returns [NumExp ast]:
- 		      n0=Number { $ast = new NumExp( Integer.parseInt($n0.text)); }
+ 		  n0=Number { $ast = new NumExp( Integer.parseInt($n0.text)); }
   		| '-' n0=Number { $ast = new NumExp(-Integer.parseInt($n0.text)); }
-  		|     n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble(      $n0.text+"."+$n1.text)); }
+  		| n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble(      $n0.text+"."+$n1.text)); }
   		| '-' n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble("-" + $n0.text+"."+$n1.text)); }
-  		;		
+ 		| '(' n0=Number ')' { $ast = new NumExp( Integer.parseInt($n0.text)); }
+  		| '(' '-' n0=Number ')' { $ast = new NumExp(-Integer.parseInt($n0.text)); }
+  		| '(' n0=Number Dot n1=Number ')' { $ast = new NumExp(Double.parseDouble(      $n0.text+"."+$n1.text)); }
+  		| '(' '-' n0=Number Dot n1=Number ')' { $ast = new NumExp(Double.parseDouble("-" + $n0.text+"."+$n1.text)); }
+  		;
   
  addexp returns [AddExp ast]
         locals [ArrayList<Exp> list]
@@ -59,8 +70,8 @@ grammar ArithLang;
  		')' { $ast = new DivExp($list); }
  		;
 
-  intdivexp returns [IntDivExp ast]
-         locals [ArrayList<Exp> list]
+ intdivexp returns [IntDivExp ast]
+        locals [ArrayList<Exp> list]
   		@init { $list = new ArrayList<Exp>(); } :
   		'(' '//'
   		      e=exp { $list.add($e.ast); }
@@ -68,8 +79,8 @@ grammar ArithLang;
   		')' { $ast = new IntDivExp($list); }
   		;
 
-  powexp returns [PowExp ast]
-         locals [ArrayList<Exp> list]
+ powexp returns [PowExp ast]
+        locals [ArrayList<Exp> list]
   		@init { $list = new ArrayList<Exp>(); } :
   		'(' '^'
   		      e=exp { $list.add($e.ast); }
@@ -77,10 +88,32 @@ grammar ArithLang;
   		')' { $ast = new PowExp($list); }
   		;
 
+ varexp returns [VarExp ast]:
+        id=Identifier { $ast = new VarExp($id.text); }
+        | '(' id=Identifier ')' { $ast = new VarExp($id.text); }
+        ;
+
+ letexp returns [LetExp ast]
+        locals [
+            HashMap<String, Exp> exps = new HashMap<String, Exp>();
+        ] :
+        '(' Let
+            '('
+  		        ( '(' id=Identifier e=exp ')' { $exps.put($id.text, $e.ast); } )+
+            ')'
+            body=exp
+        ')' {$ast = new LetExp($exps, $body.ast); }
+        ;
+
+
+
+
 
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
  Dot : '.' ;
+
+ Let: 'let';
 
  Number : DIGIT+ ;
 
@@ -101,7 +134,11 @@ grammar ArithLang;
  fragment DIGIT: ('0'..'9');
 
  AT : '@';
+
  ELLIPSIS : '...';
+
  WS  :  [ \t\r\n\u000C]+ -> skip;
+
  Comment :   '/*' .*? '*/' -> skip;
+
  Line_Comment :   '#' ~[\r\n]* -> skip;
