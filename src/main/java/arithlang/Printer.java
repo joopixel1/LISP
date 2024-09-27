@@ -81,5 +81,10 @@ public class Printer {
                 result.append("(").append(entry.getKey()).append(" ").append(entry.getValue().accept(this, env)).append(")");
             return result + ") (" + e.getBody().accept(this, env) + ") )";
         }
+
+        @Override
+        public String visit(DefExp d, Env env) {
+            return "(Define " + d.name() + " " + d.exp().accept(this, env) + ")";
+        }
     }
 }

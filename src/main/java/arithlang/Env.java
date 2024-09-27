@@ -1,5 +1,7 @@
 package arithlang;
 
+import java.util.HashMap;
+
 public interface Env {
     Value get(String k);
 
@@ -30,6 +32,23 @@ public interface Env {
         public synchronized Value get(String k){
             if(key.equals(k)) return val;
             return nestedEnv.get(k);
+        }
+    }
+
+    class GlobalEnv implements Env {
+        private final HashMap<String, Value> _globals;
+
+        public GlobalEnv(){
+            this._globals = new HashMap<>();
+        }
+
+        public synchronized Value get(String k){
+            if(!_globals.containsKey(k)) throw new LookupException("No binding found for name: " + k);
+            return _globals.get(k);
+        }
+
+        public synchronized void extend(String k, Value v){
+            _globals.put(k, v);
         }
     }
 }

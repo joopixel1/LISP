@@ -5,6 +5,11 @@ grammar ArithLang;
     import java.util.ArrayList;
  }
 
+
+
+
+
+
  // Grammar of this Programming Language
  //  - grammar rules start with lowercase
  program returns [Program ast] : 
@@ -21,8 +26,9 @@ grammar ArithLang;
         | i=intdivexp   { $ast = $i.ast; }
         | v=varexp      { $ast = $v.ast; }
         | l=letexp      { $ast = $l.ast; }
+        | f=defexp      { $ast = $f.ast; }
         ;
-  
+
  numexp returns [NumExp ast]:
  		  n0=Number { $ast = new NumExp( Integer.parseInt($n0.text)); }
   		| '-' n0=Number { $ast = new NumExp(-Integer.parseInt($n0.text)); }
@@ -105,6 +111,12 @@ grammar ArithLang;
         ')' {$ast = new LetExp($exps, $body.ast); }
         ;
 
+ defexp returns [DefExp ast]:
+        '('
+            Define id=Identifier e=exp
+        ')' { $ast = new DefExp($id.text, $e.ast); }
+        ;
+
 
 
 
@@ -114,6 +126,8 @@ grammar ArithLang;
  Dot : '.' ;
 
  Let: 'let';
+
+ Define: 'Define';
 
  Number : DIGIT+ ;
 

@@ -34,6 +34,8 @@ public interface AST {
         T visit(AST.VarExp e, Env env);
 
         T visit(AST.LetExp e, Env env);
+
+        T visit(AST.DefExp d, Env env);
     }
 
     abstract class ASTNode {
@@ -174,6 +176,24 @@ public interface AST {
         public Exp getBody(){ return _body; }
 
         public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
+        }
+    }
+
+    class DefExp extends Exp {
+        private final String _name;
+        private final Exp _e;
+
+        public DefExp(String name, Exp e) {
+            _name = name;
+            _e = e;
+        }
+
+        public String name() { return _name; }
+
+        public Exp exp() { return _e; }
+
+        public Object accept(Visitor visitor, Env env){
             return visitor.visit(this, env);
         }
     }

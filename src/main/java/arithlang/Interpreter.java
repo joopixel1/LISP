@@ -32,7 +32,7 @@ public class Interpreter {
                     printer.print(p);
                     Value val = eval.valueOf(p);
                     printer.print(val);
-                } catch (Exception e) {
+                } catch (Env.LookupException e) {
                     printer.print(e);
                 }
             }

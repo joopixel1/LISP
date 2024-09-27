@@ -3,7 +3,10 @@ package arithlang;
 public interface Value {
     String toString();
 
-    class NumVal implements Value {
+    abstract class AssignableValue implements Value{
+    }
+
+    class NumVal extends AssignableValue {
         private final double _val;
 
         public NumVal(double v) {
@@ -21,19 +24,7 @@ public interface Value {
         }
     }
 
-    class DynamicError implements Value {
-        private final String _errorMsg;
-
-        public DynamicError(String v) {
-            _errorMsg = v;
-        }
-
-        public String v() {
-            return _errorMsg;
-        }
-
-        public String toString() {
-            return _errorMsg;
-        }
+    class UnitVal implements Value {
+        public String toString() { return ""; }
     }
 }
