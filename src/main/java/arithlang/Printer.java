@@ -17,7 +17,11 @@ public class Printer {
         System.out.println((new Formatter()).visit(p, new Env.EmptyEnv()));
     }
 
-    private class Formatter implements AST.Visitor<String> {
+    public String build(Exp e, Env env) {
+        return (new Formatter()).visit(new Program(e), env);
+    }
+
+    private static class Formatter implements AST.Visitor<String> {
         public String visit(Program p, Env env) {
             return (String) p.e().accept(this, env);
         }
@@ -83,8 +87,89 @@ public class Printer {
         }
 
         @Override
-        public String visit(DefExp d, Env env) {
-            return "(Define " + d.name() + " " + d.exp().accept(this, env) + ")";
+        public String visit(DefExp e, Env env) {
+            return "(Define " + e.name() + " " + e.exp().accept(this, env) + ")";
+        }
+
+        @Override
+        public String visit(LambdaExp e, Env env) {
+            StringBuilder result = new StringBuilder("(lambda ( ");
+            for (String exp : e.params()) result.append(exp).append(" ");
+            return result + ") " + e.body().accept(this, env) + ")";
+        }
+
+        @Override
+        public String visit(CallExp e, Env env) {
+            StringBuilder result = new StringBuilder("( ").append(e.e().accept(this, env)).append(" ");
+            for (Exp exp : e.args()) result.append(exp.accept(this, env)).append(" ");
+            return result + ")";
+        }
+
+        @Override
+        public String visit(IfExp e, Env env) {
+            return "( " + e.cond().accept(this, env) + " ? " + e.t_exp().accept(this, env) + " : " + e.f_exp().accept(this, env) + " )";
+        }
+
+        @Override
+        public String visit(EqualExp e, Env env) {
+            StringBuilder result = new StringBuilder("( = ");
+            for (Exp exp : e.all()) result.append(exp.accept(this, env)).append(" ");
+            return result + ")";
+        }
+
+        @Override
+        public String visit(GtExp e, Env env) {
+            StringBuilder result = new StringBuilder("( > ");
+            for (Exp exp : e.all()) result.append(exp.accept(this, env)).append(" ");
+            return result + ")";
+        }
+
+        @Override
+        public String visit(LtExp e, Env env) {
+            StringBuilder result = new StringBuilder("( < ");
+            for (Exp exp : e.all()) result.append(exp.accept(this, env)).append(" ");
+            return result + ")";
+        }
+
+        @Override
+        public String visit(AndExp e, Env env) {
+            StringBuilder result = new StringBuilder("( and ");
+            for (Exp exp : e.all()) result.append(exp.accept(this, env)).append(" ");
+            return result + ")";
+        }
+
+        @Override
+        public String visit(OrExp e, Env env) {
+            StringBuilder result = new StringBuilder("( or ");
+            for (Exp exp : e.all()) result.append(exp.accept(this, env)).append(" ");
+            return result + ")";
+        }
+
+        @Override
+        public String visit(BoolExp e, Env env) {
+            return "" + e.v();
+        }
+
+        @Override
+        public String visit(PairExp e, Env env) {
+            return "( pair " + e.first().accept(this, env) + ", " + e.second().accept(this, env) + " )";
+        }
+
+        @Override
+        public String visit(FirstExp e, Env env) {
+            return "( first " + e.exp().accept(this, env) + " )";
+        }
+
+        @Override
+        public String visit(SecondExp e, Env env) {
+            return "( second " + e.exp().accept(this, env) + " )";
+        }
+
+        @Override
+        public String visit(ListExp e, Env env) {
+            StringBuilder result = new StringBuilder("( list ");
+            for (Exp exp : e.all()) result.append(exp.accept(this, env)).append(" ");
+            return result + ")";
         }
     }
 }

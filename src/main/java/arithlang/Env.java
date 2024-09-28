@@ -5,15 +5,9 @@ import java.util.HashMap;
 public interface Env {
     Value get(String k);
 
-    class LookupException extends RuntimeException {
-        public LookupException(String message){
-            super(message);
-        }
-    }
-
     class EmptyEnv implements Env {
         public Value get(String k){
-            throw new LookupException("No binding found for name: " + k);
+            throw new InterpreterException("No binding found for name: " + k);
         }
     }
 
@@ -43,7 +37,7 @@ public interface Env {
         }
 
         public synchronized Value get(String k){
-            if(!_globals.containsKey(k)) throw new LookupException("No binding found for name: " + k);
+            if(!_globals.containsKey(k)) throw new InterpreterException("No binding found for name: " + k);
             return _globals.get(k);
         }
 
