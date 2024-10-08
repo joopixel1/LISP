@@ -1,5 +1,6 @@
 package arithlang;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import static arithlang.AST.*;
@@ -17,13 +18,20 @@ public class Printer {
         System.out.println((new Formatter()).visit(p, new Env.EmptyEnv()));
     }
 
-    public String build(Exp e, Env env) {
-        return (new Formatter()).visit(new Program(e), env);
-    }
-
-    private static class Formatter implements AST.Visitor<String> {
+    static class Formatter implements AST.Visitor<String> {
         public String visit(Program p, Env env) {
-            return (String) p.e().accept(this, env);
+            StringBuilder ans = new StringBuilder();
+            for(DefDecl i: p.defs()) ans.append((String) i.accept(this, env));
+            return ans.append((String) p.e().accept(this, env)).toString();
+        }
+
+        @Override
+        public String visit(DefDecl e, Env env) {
+            return "(Define " + e.name() + " " + e.exp().accept(this, env) + ")";
+        }
+
+        public String visit(UnitExp e, Env env) {
+            return Value.UnitVal.UNIT_VAL.toString();
         }
 
         public String visit(NumExp e, Env env) {
@@ -84,11 +92,6 @@ public class Printer {
             for (Map.Entry<String, Exp> entry : e.getDeclaration().entrySet())
                 result.append("(").append(entry.getKey()).append(" ").append(entry.getValue().accept(this, env)).append(")");
             return result + ") (" + e.getBody().accept(this, env) + ") )";
-        }
-
-        @Override
-        public String visit(DefExp e, Env env) {
-            return "(Define " + e.name() + " " + e.exp().accept(this, env) + ")";
         }
 
         @Override
@@ -170,6 +173,11 @@ public class Printer {
             StringBuilder result = new StringBuilder("( list ");
             for (Exp exp : e.all()) result.append(exp.accept(this, env)).append(" ");
             return result + ")";
+        }
+
+        @Override
+        public String visit(AppendExp a, Env env) {
+            return "( append " + a.e().accept(this, env) + " " + a.list().accept(this, env) + " )";
         }
     }
 }

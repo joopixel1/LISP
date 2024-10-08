@@ -29,5 +29,5 @@ run {
 
 
 generateGrammarSource {
-    arguments += ["-no-listener", "-package", "arithlang.parser; import static arithlang.AST.*"]
+    arguments += ["-no-listener", "-package", "arithlang.parser; import static arithlang.AST.*; import java.util.*;"]
 }

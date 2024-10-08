@@ -1,9 +1,6 @@
 package arithlang;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class hierarchy represents expressions in the abstract syntax tree
@@ -17,6 +14,10 @@ public interface AST {
     // This interface should contain a signature for each concrete AST node.
     interface Visitor<T> {
         T visit(AST.Program p, Env env);
+
+        T visit(AST.DefDecl d, Env env);
+
+        T visit(AST.UnitExp u, Env env);
 
         T visit(AST.NumExp e, Env env);
 
@@ -35,8 +36,6 @@ public interface AST {
         T visit(AST.VarExp e, Env env);
 
         T visit(AST.LetExp e, Env env);
-
-        T visit(AST.DefExp d, Env env);
 
         T visit(AST.LambdaExp e, Env env);
 
@@ -63,6 +62,8 @@ public interface AST {
         T visit(AST.SecondExp e, Env env);
 
         T visit(AST.ListExp e, Env env);
+
+        T visit(AppendExp a, Env env);
     }
 
     abstract class ASTNode {
@@ -71,20 +72,46 @@ public interface AST {
 
     class Program extends ASTNode {
         private final Exp _e;
+        private final List<DefDecl> _defs;
 
-        public Program(Exp e) {
+        public Program(List<DefDecl> defs, Exp e) {
+            _defs = Objects.requireNonNull(defs, "Defs List cannot be Null");
             _e = Objects.requireNonNull(e, "Programs Exp cannot be Null");
         }
 
         public Exp e() {
             return _e;
         }
+        public List<DefDecl> defs() { return _defs; }
         public Object accept(Visitor visitor, Env env) {
             return visitor.visit(this, env);
         }
     }
 
+    class DefDecl extends ASTNode {
+        private final String _name;
+        private final Exp _e;
+
+        public DefDecl(String name, Exp e) {
+            _name = Objects.requireNonNull(name, "Definition Name cannot be Null");
+            _e = Objects.requireNonNull(e, "Definition Exp cannot be Null");
+        }
+
+        public String name() { return _name; }
+        public Exp exp() { return _e; }
+        public Object accept(Visitor visitor, Env env){
+            return visitor.visit(this, env);
+        }
+    }
+
     abstract class Exp extends ASTNode {
+    }
+
+    class UnitExp extends Exp {
+        @Override
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
+        }
     }
 
     abstract class CompoundExp extends Exp {
@@ -194,33 +221,17 @@ public interface AST {
     }
 
     class LetExp extends Exp {
-        private final HashMap<String, Exp> _decl;
+        private final LinkedHashMap<String, Exp> _decl;
         private final Exp _body;
 
-        public LetExp(HashMap<String, Exp> map, Exp body) {
+        public LetExp(LinkedHashMap<String, Exp> map, Exp body) {
             this._decl = Objects.requireNonNull(map, "Let 'list of assignments' cannot be Null");
             this._body = Objects.requireNonNull(body, "Let Body cannot be Null");
         }
 
-        public HashMap<String, Exp> getDeclaration(){ return _decl; }
+        public LinkedHashMap<String, Exp> getDeclaration(){ return _decl; }
         public Exp getBody(){ return _body; }
         public Object accept(Visitor visitor, Env env) {
-            return visitor.visit(this, env);
-        }
-    }
-
-    class DefExp extends Exp {
-        private final String _name;
-        private final Exp _e;
-
-        public DefExp(String name, Exp e) {
-            _name = Objects.requireNonNull(name, "Definition Name cannot be Null");
-            _e = Objects.requireNonNull(e, "Definition Exp cannot be Null");
-        }
-
-        public String name() { return _name; }
-        public Exp exp() { return _e; }
-        public Object accept(Visitor visitor, Env env){
             return visitor.visit(this, env);
         }
     }
@@ -336,8 +347,8 @@ public interface AST {
         private final Value.BoolVal _val;
 
         public BoolExp(String text) {
-            if(text.equals("true"))_val = Value.BoolVal.TrueVal;
-            else if(text.equals("false"))_val = Value.BoolVal.FalseVal;
+            if(text.equals("#t"))_val = Value.BoolVal.TrueVal;
+            else if(text.equals("#f"))_val = Value.BoolVal.FalseVal;
             else throw new InterpreterException("This is not a boolean value");
         }
 
@@ -400,6 +411,22 @@ public interface AST {
         }
 
         public ArrayList<Exp> all() { return _list; }
+        public Object accept(Visitor visitor, Env env) {
+            return visitor.visit(this, env);
+        }
+    }
+
+    class AppendExp extends Exp {
+        private final Exp _e;
+        private final Exp _l;
+
+        public AppendExp(Exp e, Exp l) {
+            _e = Objects.requireNonNull(e, "e cannot be Null");
+            _l = Objects.requireNonNull(l, "List cannot be Null");
+        }
+
+        public Exp e() { return _e; }
+        public Exp list() { return _l; }
         public Object accept(Visitor visitor, Env env) {
             return visitor.visit(this, env);
         }

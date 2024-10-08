@@ -1,0 +1,36 @@
+
+(define even
+	(lambda (n)
+		(
+		    (= n 0)
+		    ?
+		    #t
+		    :
+			(
+			    (= n 1)
+			    ?
+			    #f
+			    :
+				(even (- n 2))
+			)
+		)
+	)
+)
+
+(define odd 
+	(lambda (n)
+		(
+		    (= n 0)
+		    ?
+		    #f
+		    :
+			(
+			    (= n 1)
+			    ?
+			    #t
+			    :
+				(odd (- n 2))
+			)
+		)
+	)
+)

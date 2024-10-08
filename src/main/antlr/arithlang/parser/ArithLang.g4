@@ -1,20 +1,26 @@
 grammar ArithLang;
 
-@header {
-    import java.util.HashMap;
-    import java.util.ArrayList;
- }
-
-
 
 
 
 
  // Grammar of this Programming Language
  //  - grammar rules start with lowercase
- program returns [Program ast] : 
-		e=exp { $ast = new Program($e.ast); }
+ program returns [Program ast]
+        locals [
+            ArrayList<DefDecl> defs = new ArrayList<DefDecl>();,
+         	Exp expr = new UnitExp();
+        ] :
+		(def=defdecl { $defs.add($def.ast); } )*
+		(e=exp { $expr = $e.ast; } )?
+		{ $ast = new Program($defs, $expr); }
 		;
+
+ defdecl returns [DefDecl ast]:
+        '('
+            Define id=Identifier e=exp
+        ')' { $ast = new DefDecl($id.text, $e.ast); }
+        ;
 
  exp returns [Exp ast]:
         // arithexp
@@ -26,14 +32,12 @@ grammar ArithLang;
         | d=divexp          { $ast = $d.ast; }
         | i=intdivexp       { $ast = $i.ast; }
         // varlang
+        // TODO: Add recursiveness on let assignments
         | v=varexp          { $ast = $v.ast; }
         | l=letexp          { $ast = $l.ast; }
-        // deflang
-        | f=defexp          { $ast = $f.ast; }
         // funclang
         | lambda=lambdaexp  { $ast = $lambda.ast; }
         | call=callexp      { $ast = $call.ast; }
-        | lambda=lambdaexp  { $ast = $lambda.ast; }
         // conditional functions
         | br=branchexp      { $ast = $br.ast; }
         | equal=equalexp    { $ast = $equal.ast; }
@@ -42,13 +46,13 @@ grammar ArithLang;
         | and=andexp        { $ast = $and.ast; }
         | or=orexp          { $ast = $or.ast; }
 		| bl=boolexp        { $ast = $bl.ast; }
-        // pair and its functions
+        // pair and lists
+        | pair=pairexp      { $ast = $pair.ast; }
+        | list=listexp      { $ast = $list.ast; }
+        // pairs and lists functions
         | first=firstexp    { $ast = $first.ast; }
         | second=secondexp  { $ast = $second.ast; }
-        | pair=pairexp      { $ast = $pair.ast; }
-        // lists and its functions
-        | list=listexp      { $ast = $list.ast; }
-        // TODO: list functions
+        | append=appendexp  { $ast = $append.ast; }
         ;
 
  numexp returns [NumExp ast]:
@@ -123,7 +127,7 @@ grammar ArithLang;
 
  letexp returns [LetExp ast]
         locals [
-            HashMap<String, Exp> exps = new HashMap<String, Exp>();
+            LinkedHashMap<String, Exp> exps = new LinkedHashMap<String, Exp>();
         ] :
         '(' Let
             '('
@@ -131,12 +135,6 @@ grammar ArithLang;
             ')'
             body=exp
         ')' {$ast = new LetExp($exps, $body.ast); }
-        ;
-
- defexp returns [DefExp ast]:
-        '('
-            Define id=Identifier e=exp
-        ')' { $ast = new DefExp($id.text, $e.ast); }
         ;
 
  lambdaexp returns [LambdaExp ast]
@@ -246,15 +244,22 @@ grammar ArithLang;
   		')' { $ast = new PairExp($f.ast, $s.ast); }
   		;
 
-  listexp returns [ListExp ast]
+ listexp returns [ListExp ast]
         locals [
             ArrayList<Exp> list = new ArrayList<Exp>();
         ] :
   		'(' List
  		    ( e=exp { $list.add($e.ast); } )*
   		')' { $ast = new ListExp($list); }
-  		;
+  	    ;
 
+ appendexp returns [AppendExp ast]
+        :
+        '(' Append
+            ( e=exp )
+            ( l=exp )
+        ')' { $ast = new AppendExp($e.ast, $l.ast); }
+        ;
 
 
 
@@ -264,7 +269,7 @@ grammar ArithLang;
 
  Let: 'let';
 
- Define: 'Define';
+ Define: 'define';
 
  Lambda: 'lambda';
 
@@ -274,9 +279,9 @@ grammar ArithLang;
 
  Or: 'or';
 
- True: 'true';
+ True: '#t';
 
- False: 'false';
+ False: '#f';
 
  Pair: 'pair';
 
@@ -285,6 +290,8 @@ grammar ArithLang;
  Second: 'second';
 
  List: 'list';
+
+ Append: 'append';
 
  Number : DIGIT+ ;
 

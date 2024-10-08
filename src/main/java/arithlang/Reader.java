@@ -43,13 +43,13 @@ public class Reader implements AutoCloseable {
         }
     }
 
-    private Program parse(String programText) {
+    Program parse(String programText) {
         Lexer l = new ArithLangLexer(CharStreams.fromString(programText));
         ArithLangParser p = new ArithLangParser(new org.antlr.v4.runtime.CommonTokenStream(l));
         return p.program().ast;
     }
 
-    private String runFile(String programText) throws IOException {
+    String runFile(String programText) throws IOException {
         if (programText.startsWith("run ")) {
             programText = readFile(getProgramDirectory() + programText.substring(4));
         }

@@ -1,5 +1,7 @@
 package arithlang;
 
+import com.ibm.icu.impl.Pair;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -28,7 +30,7 @@ public abstract class Value{
     }
 
     public interface Equaleable {
-        default BoolVal equal(Equaleable o){ throw new InterpreterException(this.getClass() + "Assignable has not been Equaleable extended") ; }
+        default BoolVal eq(Equaleable o){ throw new InterpreterException(this.getClass() + "Assignable has not been Equaleable extended") ; }
     }
 
     public abstract static class AssignableValue extends Value implements Booleable, Equaleable, Compareable{
@@ -47,7 +49,7 @@ public abstract class Value{
 
         public BoolVal toBool(){ return new BoolVal(!(_val == 0)); }
 
-        public BoolVal equal(Equaleable o) {
+        public BoolVal eq(Equaleable o) {
             if(o == this) return BoolVal.TrueVal;
             if(!(o instanceof NumVal)) throw new InterpreterException("comparing objects of diff types");
 
@@ -82,7 +84,7 @@ public abstract class Value{
 
         public BoolVal toBool() { return this; }
 
-        public BoolVal equal(Equaleable o) {
+        public BoolVal eq(Equaleable o) {
             if(o == this) return BoolVal.TrueVal;
             if(!(o instanceof BoolVal)) throw new InterpreterException("comparing objects of diff types");
 
@@ -117,7 +119,12 @@ public abstract class Value{
         }
     }
 
-    public static final class PairVal extends AssignableValue{
+    public interface Pairable{
+        AssignableValue first();
+        AssignableValue second();
+    }
+
+    public static final class PairVal extends AssignableValue implements Pairable{
         private final AssignableValue _first;
         private final AssignableValue _second;
 
@@ -135,7 +142,7 @@ public abstract class Value{
         }
     }
 
-    public static final class ListVal extends AssignableValue{
+    public static final class ListVal extends AssignableValue implements Pairable {
         public static final ListVal EMPTY_LIST = new ListVal();
 
         private final AssignableValue _v;
@@ -151,8 +158,10 @@ public abstract class Value{
             _sub = null;
         }
 
-        public AssignableValue v() { return _v; }
-        public ListVal sub() { return _sub; }
+        public AssignableValue first() { return _v; }
+        public AssignableValue second() { return _sub; }
+
+        public BoolVal toBool() { return (this == EMPTY_LIST) ? BoolVal.FalseVal : BoolVal.TrueVal; }
 
         public String string() {
             StringBuilder result = new StringBuilder("ListVal( ");
@@ -161,4 +170,24 @@ public abstract class Value{
         }
     }
 
+    public static final class PromiseVal extends Value{
+        private final AST.Visitor _visitor;
+        private final AST.Exp _exp;
+        private final Env _env;
+
+        public PromiseVal(AST.Visitor visitor, AST.Exp exp, Env env){
+            _visitor = Objects.requireNonNull(visitor, "visitor cannot be null");
+            _exp = Objects.requireNonNull(exp, "exp value cannot be null");
+            _env = Objects.requireNonNull(env, "env Value cannot be null");
+        }
+
+        public AST.Exp exp() { return _exp; }
+        public Env env() { return _env; }
+        public AssignableValue toAssignableValue(){ return (AssignableValue) _exp.accept(_visitor, _env); }
+
+        @Override
+        protected String string() {
+            return "Promise<" + _exp + ", " + _env + ">";
+        }
+    }
 }

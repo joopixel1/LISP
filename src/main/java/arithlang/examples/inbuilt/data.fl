@@ -1,0 +1,26 @@
+/* List procedures with semantics similar to Scheme lists */
+
+(define length
+	(lambda (lst)
+		(
+		    (lst)
+		    ?
+			(+ 1 (length (second lst)))
+			:
+			(0)
+		)		
+	)
+)
+
+(define map
+	(lambda (op lst)
+		(
+		    (lst)
+		    ?
+			(append (op (first lst)) (map op (second lst)))
+			:
+		    (list )
+		)		
+	)
+)
+
